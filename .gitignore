@@ -8,3 +8,5 @@ export_presets.cfg
 .mono/
 
 export/
+lib/
+libagones.so
