@@ -1,8 +1,11 @@
 extends Node
 
 const DEFAULT_IP = '127.0.0.1'
-const DEFAULT_PORT = 31400
+const DEFAULT_PORT = 9410
 const MAX_PLAYERS = 5
+const IS_SERVER = false
+
+var Agones
 
 var players = { }
 var self_data = { name = '', position = Vector2(360, 180) }
@@ -15,9 +18,14 @@ func _ready():
 	get_tree().connect('network_peer_connected', self, '_on_player_connected')
 
 func create_server():
+	Agones = load('res://bin/agones.gdns').new()
+	if not Agones.connect():
+		print('failed to connect to sidecar')
 	var peer = NetworkedMultiplayerENet.new()
 	peer.create_server(DEFAULT_PORT, MAX_PLAYERS)
 	get_tree().set_network_peer(peer)
+	Agones.ready()
+	Agones.set_annotation('max-players', MAX_PLAYERS)
 
 func connect_to_server(ip, port, player_nickname):
 	self_data.name = player_nickname
@@ -33,6 +41,9 @@ func _connected_to_server():
 
 func _on_player_disconnected(id):
 	players.erase(id)
+	if IS_SERVER:
+		if players.empty():
+			Agones.shutdown()
 
 func _on_player_connected(connected_player_id):
 	var local_player_id = get_tree().get_network_unique_id()

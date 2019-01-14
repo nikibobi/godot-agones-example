@@ -5,7 +5,7 @@ var _server_ip = ''
 onready var _server_port = Network.DEFAULT_PORT
 
 func _ready():
-	if OS.has_feature('64'):
+	if Network.IS_SERVER:
 		Network.create_server()
 		_load_game()
 	else:

@@ -4,7 +4,7 @@ func _ready():
 	get_tree().connect('network_peer_disconnected', self, '_on_player_disconnected')
 	get_tree().connect('server_disconnected', self, '_on_server_disconnected')
 	
-	if OS.has_feature('32'):
+	if not Network.IS_SERVER:
 		var new_player = preload('res://player/Player.tscn').instance()
 		new_player.name = str(get_tree().get_network_unique_id())
 		new_player.set_network_master(get_tree().get_network_unique_id())
