@@ -37,8 +37,10 @@ select_mode = 1
 script = ExtResource( 1 )
 column_titles = PoolStringArray( "Server Name", "IP Address", "Players", "Locked" )
 
+[node name="HTTPRequest" type="HTTPRequest" parent="VBox/ServerList"]
+use_threads = true
+
 [node name="HBox" type="HBoxContainer" parent="VBox"]
-editor/display_folded = true
 margin_top = 562.0
 margin_right = 1010.0
 margin_bottom = 586.0
@@ -60,11 +62,22 @@ margin_right = 302.0
 margin_bottom = 24.0
 text = "Hide Empty"
 
-[node name="Connect" type="Button" parent="VBox/HBox"]
+[node name="Create" type="Button" parent="VBox/HBox"]
 margin_left = 306.0
-margin_right = 370.0
+margin_right = 359.0
+margin_bottom = 24.0
+text = "Create"
+
+[node name="Connect" type="Button" parent="VBox/HBox"]
+margin_left = 363.0
+margin_right = 427.0
 margin_bottom = 24.0
 text = "Connect"
 
 [connection signal="pressed" from="VBox/HBoxContainer/Refresh" to="VBox/ServerList" method="_on_Refresh_pressed"]
+[connection signal="request_completed" from="VBox/ServerList/HTTPRequest" to="VBox/ServerList" method="_on_HTTPRequest_request_completed"]
+[connection signal="toggled" from="VBox/HBox/HideLocked" to="VBox/ServerList" method="_on_HideLocked_toggled"]
+[connection signal="toggled" from="VBox/HBox/HideFull" to="VBox/ServerList" method="_on_HideFull_toggled"]
+[connection signal="toggled" from="VBox/HBox/HideEmpty" to="VBox/ServerList" method="_on_HideEmpty_toggled"]
+[connection signal="pressed" from="VBox/HBox/Create" to="VBox/ServerList" method="_on_Create_pressed"]
 [connection signal="pressed" from="VBox/HBox/Connect" to="VBox/ServerList" method="_on_Connect_pressed"]

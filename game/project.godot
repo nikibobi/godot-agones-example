@@ -16,7 +16,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Agones Multiplayer Demo"
-run/main_scene="res://interface/Menu.tscn"
+run/main_scene="res://interface/ServerBrowser.tscn"
 config/icon="res://icon.png"
 
 [autoload]
