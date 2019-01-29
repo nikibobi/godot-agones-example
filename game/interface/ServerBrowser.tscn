@@ -1,0 +1,70 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://interface/ServerBrowser.gd" type="Script" id=1]
+
+[node name="ServerBrowser" type="PanelContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_top = -3.0
+margin_bottom = -3.0
+
+[node name="VBox" type="VBoxContainer" parent="."]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1017.0
+margin_bottom = 593.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBox"]
+editor/display_folded = true
+margin_right = 1010.0
+margin_bottom = 20.0
+alignment = 2
+
+[node name="Refresh" type="Button" parent="VBox/HBoxContainer"]
+margin_left = 950.0
+margin_right = 1010.0
+margin_bottom = 20.0
+text = "Refresh"
+
+[node name="ServerList" type="Tree" parent="VBox"]
+margin_top = 24.0
+margin_right = 1010.0
+margin_bottom = 558.0
+size_flags_vertical = 3
+hide_folding = true
+hide_root = true
+select_mode = 1
+script = ExtResource( 1 )
+column_titles = PoolStringArray( "Server Name", "IP Address", "Players", "Locked" )
+
+[node name="HBox" type="HBoxContainer" parent="VBox"]
+editor/display_folded = true
+margin_top = 562.0
+margin_right = 1010.0
+margin_bottom = 586.0
+
+[node name="HideLocked" type="CheckBox" parent="VBox/HBox"]
+margin_right = 107.0
+margin_bottom = 24.0
+text = "Hide Locked"
+
+[node name="HideFull" type="CheckBox" parent="VBox/HBox"]
+margin_left = 111.0
+margin_right = 196.0
+margin_bottom = 24.0
+text = "Hide Full"
+
+[node name="HideEmpty" type="CheckBox" parent="VBox/HBox"]
+margin_left = 200.0
+margin_right = 302.0
+margin_bottom = 24.0
+text = "Hide Empty"
+
+[node name="Connect" type="Button" parent="VBox/HBox"]
+margin_left = 306.0
+margin_right = 370.0
+margin_bottom = 24.0
+text = "Connect"
+
+[connection signal="pressed" from="VBox/HBoxContainer/Refresh" to="VBox/ServerList" method="_on_Refresh_pressed"]
+[connection signal="pressed" from="VBox/HBox/Connect" to="VBox/ServerList" method="_on_Connect_pressed"]
