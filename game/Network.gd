@@ -44,6 +44,8 @@ func _on_player_disconnected(id):
 	if IS_SERVER:
 		if players.empty():
 			Agones.shutdown()
+		else:
+			Agones.set_annotation('num-players', players.size())
 
 func _on_player_connected(connected_player_id):
 	if IS_SERVER:
