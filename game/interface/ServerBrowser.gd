@@ -12,9 +12,13 @@ onready var create_dialog = $'../../CreateDialog'
 onready var connect_dialog = $'../../ConnectDialog'
 
 func _ready():
-	create_item()
-	add_column_titles(column_titles)
-	refresh()
+	if Network.IS_SERVER:
+		Network.create_server()
+		get_tree().change_scene('res://Game.tscn')
+	else:
+		create_item()
+		add_column_titles(column_titles)
+		refresh()
 
 func add_column_titles(titles):
 	columns = titles.size()

@@ -46,6 +46,8 @@ func _on_player_disconnected(id):
 			Agones.shutdown()
 
 func _on_player_connected(connected_player_id):
+	if IS_SERVER:
+		Agones.set_annotation('num-players', players.size() + 1)
 	var local_player_id = get_tree().get_network_unique_id()
 	if not(get_tree().is_network_server()):
 		rpc_id(1, '_request_player_info', local_player_id, connected_player_id)
