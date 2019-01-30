@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://interface/ServerBrowser.gd" type="Script" id=1]
+[ext_resource path="res://interface/ServerDialog.tscn" type="PackedScene" id=2]
 
 [node name="ServerBrowser" type="PanelContainer"]
 anchor_right = 1.0
@@ -14,70 +15,93 @@ margin_top = 7.0
 margin_right = 1017.0
 margin_bottom = 593.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBox"]
+[node name="HBoxTop" type="HBoxContainer" parent="VBox"]
 editor/display_folded = true
 margin_right = 1010.0
-margin_bottom = 20.0
+margin_bottom = 24.0
 alignment = 2
 
-[node name="Refresh" type="Button" parent="VBox/HBoxContainer"]
-margin_left = 950.0
-margin_right = 1010.0
-margin_bottom = 20.0
-text = "Refresh"
-
-[node name="ServerList" type="Tree" parent="VBox"]
-margin_top = 24.0
-margin_right = 1010.0
-margin_bottom = 558.0
-size_flags_vertical = 3
-hide_folding = true
-hide_root = true
-select_mode = 1
-script = ExtResource( 1 )
-column_titles = PoolStringArray( "Server Name", "IP Address", "Players", "Locked" )
-
-[node name="HTTPRequest" type="HTTPRequest" parent="VBox/ServerList"]
-use_threads = true
-
-[node name="HBox" type="HBoxContainer" parent="VBox"]
-margin_top = 562.0
-margin_right = 1010.0
-margin_bottom = 586.0
-
-[node name="HideLocked" type="CheckBox" parent="VBox/HBox"]
+[node name="HideLocked" type="CheckBox" parent="VBox/HBoxTop"]
 margin_right = 107.0
 margin_bottom = 24.0
 text = "Hide Locked"
 
-[node name="HideFull" type="CheckBox" parent="VBox/HBox"]
+[node name="HideFull" type="CheckBox" parent="VBox/HBoxTop"]
 margin_left = 111.0
 margin_right = 196.0
 margin_bottom = 24.0
 text = "Hide Full"
 
-[node name="HideEmpty" type="CheckBox" parent="VBox/HBox"]
+[node name="HideEmpty" type="CheckBox" parent="VBox/HBoxTop"]
 margin_left = 200.0
 margin_right = 302.0
 margin_bottom = 24.0
 text = "Hide Empty"
 
-[node name="Create" type="Button" parent="VBox/HBox"]
+[node name="Space" type="Control" parent="VBox/HBoxTop"]
 margin_left = 306.0
-margin_right = 359.0
+margin_right = 946.0
 margin_bottom = 24.0
+size_flags_horizontal = 3
+
+[node name="Refresh" type="Button" parent="VBox/HBoxTop"]
+margin_left = 950.0
+margin_right = 1010.0
+margin_bottom = 24.0
+text = "Refresh"
+
+[node name="ServerList" type="Tree" parent="VBox"]
+editor/display_folded = true
+margin_top = 28.0
+margin_right = 1010.0
+margin_bottom = 562.0
+size_flags_vertical = 3
+hide_folding = true
+hide_root = true
+select_mode = 1
+script = ExtResource( 1 )
+column_titles = PoolStringArray( "Server Name", "Players", "Locked" )
+
+[node name="HTTPRequest" type="HTTPRequest" parent="VBox/ServerList"]
+use_threads = true
+
+[node name="HBoxBot" type="HBoxContainer" parent="VBox"]
+editor/display_folded = true
+margin_top = 566.0
+margin_right = 1010.0
+margin_bottom = 586.0
+
+[node name="Create" type="Button" parent="VBox/HBoxBot"]
+margin_right = 53.0
+margin_bottom = 20.0
 text = "Create"
 
-[node name="Connect" type="Button" parent="VBox/HBox"]
-margin_left = 363.0
-margin_right = 427.0
-margin_bottom = 24.0
+[node name="Space" type="Control" parent="VBox/HBoxBot"]
+margin_left = 57.0
+margin_right = 942.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+
+[node name="Connect" type="Button" parent="VBox/HBoxBot"]
+margin_left = 946.0
+margin_right = 1010.0
+margin_bottom = 20.0
 text = "Connect"
 
-[connection signal="pressed" from="VBox/HBoxContainer/Refresh" to="VBox/ServerList" method="_on_Refresh_pressed"]
+[node name="CreateDialog" parent="." instance=ExtResource( 2 )]
+window_title = "Create Server"
+label_text = "Server Name"
+
+[node name="ConnectDialog" parent="." instance=ExtResource( 2 )]
+window_title = "Connect To"
+label_text = "Nickname"
+
+[connection signal="toggled" from="VBox/HBoxTop/HideLocked" to="VBox/ServerList" method="_on_HideLocked_toggled"]
+[connection signal="toggled" from="VBox/HBoxTop/HideFull" to="VBox/ServerList" method="_on_HideFull_toggled"]
+[connection signal="toggled" from="VBox/HBoxTop/HideEmpty" to="VBox/ServerList" method="_on_HideEmpty_toggled"]
+[connection signal="pressed" from="VBox/HBoxTop/Refresh" to="VBox/ServerList" method="_on_Refresh_pressed"]
 [connection signal="request_completed" from="VBox/ServerList/HTTPRequest" to="VBox/ServerList" method="_on_HTTPRequest_request_completed"]
-[connection signal="toggled" from="VBox/HBox/HideLocked" to="VBox/ServerList" method="_on_HideLocked_toggled"]
-[connection signal="toggled" from="VBox/HBox/HideFull" to="VBox/ServerList" method="_on_HideFull_toggled"]
-[connection signal="toggled" from="VBox/HBox/HideEmpty" to="VBox/ServerList" method="_on_HideEmpty_toggled"]
-[connection signal="pressed" from="VBox/HBox/Create" to="VBox/ServerList" method="_on_Create_pressed"]
-[connection signal="pressed" from="VBox/HBox/Connect" to="VBox/ServerList" method="_on_Connect_pressed"]
+[connection signal="pressed" from="VBox/HBoxBot/Create" to="VBox/ServerList" method="_on_Create_pressed"]
+[connection signal="pressed" from="VBox/HBoxBot/Connect" to="VBox/ServerList" method="_on_Connect_pressed"]
+[connection signal="confirmed" from="CreateDialog" to="VBox/ServerList" method="_on_CreateDialog_confirmed"]
+[connection signal="confirmed" from="ConnectDialog" to="VBox/ServerList" method="_on_ConnectDialog_confirmed"]

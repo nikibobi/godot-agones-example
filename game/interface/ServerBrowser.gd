@@ -4,14 +4,15 @@ export(PoolStringArray) var column_titles
 export(String) var master_server = 'http://192.168.2.203:30941'
 export(String) var api_path = '/api/servers'
 
-var params = {}
+var query_params = {}
 
-enum { COLUMN_NAME = 0, COLUMN_HOST = 1, COLUMN_PLAYERS = 2, COLUMN_LOCKED = 3 }
+enum { COLUMN_NAME = 0, COLUMN_PLAYERS = 1, COLUMN_LOCKED = 2 }
 
-const RANDOM_ROWS = 60
+onready var create_dialog = $'../../CreateDialog'
+onready var connect_dialog = $'../../ConnectDialog'
 
 func _ready():
-	var root = create_item()
+	create_item()
 	add_column_titles(column_titles)
 	refresh()
 
@@ -21,81 +22,99 @@ func add_column_titles(titles):
 		set_column_title(i, titles[i])
 	set_column_titles_visible(true)
 
-func add_rows(parent):
-	for i in range(RANDOM_ROWS):
-		add_row_random(parent)
-
-func add_row_random(parent):
-	var server_name = 'Server ' + char(65 + randi() % 26)
-	var ip = '192.168.2.203'
-	var port = 7000 + randi() % 1001
-	var maximum = 5 + 5 * (randi() % 5)
-	var current = randi() % (maximum + 1)
-	var is_locked = randf() > 0.333
-	return add_row(parent, server_name, ip, port, current, maximum, is_locked)
-
-func add_row(parent, server_name, ip, port, current, maximum, is_locked):
+func add_row(parent, server_name, ip, port, current, maximum, password_hash = ''):
 	var row = create_item(parent)
 	row.set_text(COLUMN_NAME, server_name)
-	var host_name =  ip + ':' + str(port)
-	row.set_text(COLUMN_HOST, host_name)
-	row.set_text_align(COLUMN_HOST, TreeItem.ALIGN_CENTER)
+	row.set_meta('ip', ip)
+	row.set_meta('port', port)
 	var players = str(current) + '/' + str(maximum)
 	row.set_text(COLUMN_PLAYERS, players)
 	row.set_text_align(COLUMN_PLAYERS, TreeItem.ALIGN_CENTER)
 	row.set_cell_mode(COLUMN_LOCKED, TreeItem.CELL_MODE_CHECK)
-	row.set_checked(COLUMN_LOCKED, is_locked)
+	row.set_checked(COLUMN_LOCKED, password_hash != '')
+	row.set_meta('password_hash', password_hash)
 	return row
+
+func add_row_dict(parent, d):
+	add_row(parent, d['name'], d['ipAddress'], d['port'], d['currentPlayers'], d['maxPlayers'], d['passwordHash'])
 
 func refresh():
 	var url = master_server + api_path
-	var query = HTTPClient.new().query_string_from_dict(params)
+	var query = HTTPClient.new().query_string_from_dict(query_params)
 	if query != '':
 		url += '?' + query
 	$HTTPRequest.request(url, [], false, HTTPClient.METHOD_GET)
-	print(url)
+	print('Fetch ' + url)
 
 func _on_Refresh_pressed():
-	print('Refreshing')
 	refresh()
 
 func _on_HTTPRequest_request_completed(result, response_code, headers, body):
-	var response = JSON.parse(body.get_string_from_utf8())
-	if typeof(response.result) == TYPE_ARRAY:
+	var body_text = body.get_string_from_utf8()
+	var response = JSON.parse(body_text)
+	var variant = response.result
+	if typeof(variant) == TYPE_ARRAY:
 		clear()
 		var root = create_item()
-		for s in response.result:
-			add_row(root, s['name'], s['ipAddress'], s['port'], s['currentPlayers'], s['maxPlayers'], s['isPasswordProtected'])
+		for server in variant:
+			add_row_dict(root, server)
+	elif typeof(variant) == TYPE_DICTIONARY:
+		add_row_dict(get_root(), variant)
 
 func change_params(key, pressed):
 	if pressed:
-		params[key] = true
+		query_params[key] = true
 	else:
-		params.erase(key)
+		query_params.erase(key)
 
-func _on_HideFull_toggled(button_pressed):
-	change_params('isNotFull', button_pressed)
+func connect_to_server(ip, port, player_name):
+	Network.connect_to_server(ip, port, player_name)
+	print('Connecting to ' + ip + ':' + str(port))
+	get_tree().change_scene('res://Game.tscn')
 
-func _on_HideEmpty_toggled(button_pressed):
-	change_params('isNotEmpty', button_pressed)
+func _on_HideFull_toggled(checked):
+	change_params('isNotFull', checked)
 
-func _on_HideLocked_toggled(button_pressed):
-	change_params('isNotPasswordProtected', button_pressed)
+func _on_HideEmpty_toggled(checked):
+	change_params('isNotEmpty', checked)
+
+func _on_HideLocked_toggled(checked):
+	change_params('isNotPasswordProtected', checked)
 
 func _on_Create_pressed():
-	# TODO: show server create dialog
-	print('Create')
+	create_dialog.show()
 
 func _on_Connect_pressed():
+	if get_selected() == null:
+		return
+	connect_dialog.show()
+
+func _on_CreateDialog_confirmed():
+	var url = master_server + api_path
+	var headers = PoolStringArray(['Content-Type: application/json'])
+	var name = create_dialog.text
+	var password = create_dialog.password
+	var payload = {
+		'name': name,
+		'currentPlayers': 0,
+		'maxPlayers': 5
+	}
+	if not password.empty():
+		payload['passwordHash'] = password.sha256_text()
+	$HTTPRequest.request(url, headers, false, HTTPClient.METHOD_POST, JSON.print(payload))
+
+func _on_ConnectDialog_confirmed():
 	var row = get_selected()
 	if row == null:
 		return
-	var host = row.get_text(COLUMN_HOST)
-	var parts = host.split(':')
-	var ip = parts[0]
-	var port = int(parts[1])
-	# TODO: prompt for player name and server password
-	var player_name = str(OS.get_unix_time()).sha256_text().substr(0, 6)
-	Network.connect_to_server(ip, port, player_name)
-	print('Connecting to ' + host)
-	get_tree().change_scene('res://Game.tscn')
+	var ip = row.get_meta('ip')
+	var port = row.get_meta('port')
+	var player_name = connect_dialog.text
+	if row.is_checked(COLUMN_LOCKED):
+		var password_hash = connect_dialog.password.sha256_text()
+		if password_hash == row.get_meta('password_hash'):
+			connect_to_server(ip, port, player_name)
+		else:
+			print('wrong password')
+	else:
+		connect_to_server(ip, port, player_name)
