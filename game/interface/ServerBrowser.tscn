@@ -95,7 +95,6 @@ label_text = "Server Name"
 [node name="ConnectDialog" parent="." instance=ExtResource( 2 )]
 window_title = "Connect To"
 label_text = "Nickname"
-
 [connection signal="toggled" from="VBox/HBoxTop/HideLocked" to="VBox/ServerList" method="_on_HideLocked_toggled"]
 [connection signal="toggled" from="VBox/HBoxTop/HideFull" to="VBox/ServerList" method="_on_HideFull_toggled"]
 [connection signal="toggled" from="VBox/HBoxTop/HideEmpty" to="VBox/ServerList" method="_on_HideEmpty_toggled"]
